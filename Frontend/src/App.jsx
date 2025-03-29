@@ -1,35 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import "./App.css";
+
+// Import all your components
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import AnimeCard from "./components/AnimeCard";
+import AnimeList from "./components/AnimeList";
+import Carousel from "./components/Carousel";
+import ProfileCard from "./components/ProfileCard";
+import VideoPlayer from "./components/VideoPlayer";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Temporary mock data for demonstration
+  const mockAnime = {
+    id: 1,
+    title: "Attack on Titan",
+    imageUrl: "https://via.placeholder.com/300x450?text=Anime+Poster",
+    rating: 9.1,
+    type: "TV",
+    episodes: 16,
+    year: 2023,
+    isNew: true,
+  };
+
+  const mockUser = {
+    username: "AnimeFan123",
+    email: "user@example.com",
+    avatar: "https://via.placeholder.com/150?text=User",
+    stats: {
+      watched: 156,
+      watchlist: 24,
+      favorites: 12,
+    },
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app">
+      {/* Show all components for visualization */}
+      <Navbar />
+
+      <div className="layout">
+        <Sidebar />
+
+        <main className="main-content">
+          <h1>AniVerse Components Demo</h1>
+
+          <section className="component-section">
+            <h2>Carousel</h2>
+            <Carousel />
+          </section>
+
+          <section className="component-section">
+            <h2>AnimeCard</h2>
+            <AnimeCard
+              anime={mockAnime}
+              onCardClick={() => console.log("Card clicked")}
+            />
+          </section>
+
+          <section className="component-section">
+            <h2>AnimeList</h2>
+            <AnimeList
+              title="Popular Anime"
+              animes={[mockAnime, mockAnime, mockAnime]}
+            />
+          </section>
+
+          <section className="component-section">
+            <h2>VideoPlayer</h2>
+            <VideoPlayer
+              src="https://example.com/sample.mp4"
+              poster="https://via.placeholder.com/800x450?text=Video+Thumbnail"
+              title="Sample Video"
+            />
+          </section>
+
+          <section className="component-section">
+            <h2>ProfileCard</h2>
+            <ProfileCard user={mockUser} />
+          </section>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
