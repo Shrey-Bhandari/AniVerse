@@ -10,11 +10,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -29,7 +25,7 @@ const Navbar = () => {
   };
 
   return (
-    <NavContainer scrolled={isScrolled}>
+    <NavContainer $scrolled={isScrolled}>
       <NavLeft>
         <Logo to="/">ANIVERSE</Logo>
       </NavLeft>
@@ -40,7 +36,7 @@ const Navbar = () => {
             type="text"
             placeholder="Search anime..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target)}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <SearchButton type="submit">
             <FaSearch />
@@ -70,12 +66,12 @@ const NavContainer = styled.nav`
   align-items: center;
   padding: 1rem 2rem;
   z-index: 1000;
-  background-color: ${({ scrolled }) =>
-    scrolled ? "rgba(20, 20, 20, 0.95)" : "rgba(20, 20, 20, 0.8)"};
-  backdrop-filter: blur(${({ scrolled }) => (scrolled ? "10px" : "5px")});
+  background-color: ${({ $scrolled }) =>
+    $scrolled ? "rgba(20, 20, 20, 0.95)" : "rgba(20, 20, 20, 0.8)"};
+  backdrop-filter: blur(${({ $scrolled }) => ($scrolled ? "10px" : "5px")});
   transition: all 0.3s ease;
-  border-bottom: ${({ scrolled }) =>
-    scrolled ? "1px solid rgba(255, 87, 34, 0.3)" : "none"};
+  border-bottom: ${({ $scrolled }) =>
+    $scrolled ? "1px solid rgba(255, 87, 34, 0.3)" : "none"};
 `;
 
 const NavLeft = styled.div`

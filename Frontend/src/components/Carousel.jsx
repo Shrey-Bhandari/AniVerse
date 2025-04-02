@@ -6,6 +6,11 @@ const Carousel = ({ items }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Ensure items exist before rendering
+  if (!items || items.length === 0) {
+    return <FallbackMessage>No items available</FallbackMessage>;
+  }
+
   // Auto-rotate every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -33,11 +38,11 @@ const Carousel = ({ items }) => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <SlideContainer bgImage={items[currentIndex].imageUrl}>
+      <SlideContainer bgImage={items[currentIndex]?.imageUrl}>
         <SlideContent>
-          <AnimeTitle>{items[currentIndex].title}</AnimeTitle>
+          <AnimeTitle>{items[currentIndex]?.title}</AnimeTitle>
           <AnimeDescription>
-            {items[currentIndex].description.substring(0, 150)}...
+            {items[currentIndex]?.description?.substring(0, 150)}...
           </AnimeDescription>
           <WatchNowButton>WATCH NOW</WatchNowButton>
         </SlideContent>
@@ -195,6 +200,13 @@ const PaginationDot = styled.div`
     transform: scale(1.3);
     background-color: ${(props) => (props.active ? "#ff5722" : "white")};
   }
+`;
+
+const FallbackMessage = styled.div`
+  text-align: center;
+  padding: 20px;
+  font-size: 1.5rem;
+  color: #ff5722;
 `;
 
 export default Carousel;

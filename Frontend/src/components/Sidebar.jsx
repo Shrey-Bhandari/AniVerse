@@ -29,20 +29,15 @@ const Sidebar = () => {
   ];
 
   return (
-    <SidebarContainer collapsed={isCollapsed}>
+    <SidebarContainer $collapsed={isCollapsed}>
       <ToggleButton onClick={toggleSidebar}>
         {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
       </ToggleButton>
 
       <NavItems>
         {navItems.map((item, index) => (
-          <NavItem
-            key={index}
-            to={item.path}
-            collapsed={isCollapsed}
-            activeClassName="active"
-          >
-            <IconWrapper>{item.icon}</IconWrapper>
+          <NavItem key={index} to={item.path} $collapsed={isCollapsed}>
+            <IconWrapper $collapsed={isCollapsed}>{item.icon}</IconWrapper>
             {!isCollapsed && <Label>{item.label}</Label>}
           </NavItem>
         ))}
@@ -57,7 +52,7 @@ const SidebarContainer = styled.div`
   left: 0;
   top: 0;
   height: 100vh;
-  width: ${({ collapsed }) => (collapsed ? "80px" : "250px")};
+  width: ${({ $collapsed }) => ($collapsed ? "80px" : "250px")};
   background-color: #1a1a1a;
   color: white;
   padding: 1rem;
@@ -100,7 +95,7 @@ const NavItem = styled(NavLink)`
   padding: 0.8rem 1rem;
   border-radius: 8px;
   transition: all 0.3s ease;
-  width: ${({ collapsed }) => (collapsed ? "fit-content" : "100%")};
+  width: ${({ $collapsed }) => ($collapsed ? "fit-content" : "100%")};
   margin: 0 auto;
 
   &:hover {
@@ -116,14 +111,14 @@ const NavItem = styled(NavLink)`
 
 const IconWrapper = styled.div`
   font-size: 1.3rem;
-  margin-right: ${({ collapsed }) => (collapsed ? "0" : "1rem")};
+  margin-right: ${({ $collapsed }) => ($collapsed ? "0" : "1rem")};
 `;
 
 const Label = styled.span`
   font-size: 1rem;
   font-weight: 500;
   white-space: nowrap;
-  opacity: ${({ collapsed }) => (collapsed ? "0" : "1")};
+  opacity: ${({ $collapsed }) => ($collapsed ? "0" : "1")};
   transition: opacity 0.3s ease;
 `;
 

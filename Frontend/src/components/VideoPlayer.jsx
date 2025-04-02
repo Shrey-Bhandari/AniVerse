@@ -178,8 +178,8 @@ const VideoPlayer = ({ src, poster, title, onNext, onPrev }) => {
 
           <BottomControls>
             <ProgressBar ref={progressRef} onClick={handleProgressClick}>
-              <Progress progress={progress} />
-              <ProgressHandle progress={progress} />
+              <Progress $progress={progress} />
+              <ProgressHandle $progress={progress} />
             </ProgressBar>
 
             <TimeInfo>
@@ -358,7 +358,7 @@ const ProgressBar = styled.div`
 
 const Progress = styled.div`
   height: 100%;
-  width: ${(props) => props.progress}%;
+  width: ${(props) => props.$progress}%;
   background-color: #ff5722;
   border-radius: 3px;
 `;
@@ -366,7 +366,7 @@ const Progress = styled.div`
 const ProgressHandle = styled.div`
   position: absolute;
   top: 50%;
-  left: ${(props) => props.progress}%;
+  left: ${(props) => props.$progress}%;
   width: 12px;
   height: 12px;
   background-color: #ff5722;

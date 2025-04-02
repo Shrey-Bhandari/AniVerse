@@ -33,10 +33,10 @@ const AnimeList = ({ title, animes }) => {
       </ListHeader>
 
       <ListContent ref={listRef}>
-        {animes.map((anime) => (
-          <AnimeCard key={anime.id} anime={anime} />
-        ))}
-      </ListContent>
+  {animes.map((anime, index) => (
+    <AnimeCard key={anime.id || anime.mal_id || `${anime.title}-${index}`} anime={anime} />
+  ))}
+</ListContent>
     </ListContainer>
   );
 };
