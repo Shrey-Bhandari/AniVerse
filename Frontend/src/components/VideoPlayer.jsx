@@ -9,303 +9,298 @@ import {
   FaCompress,
   FaStepForward,
   FaStepBackward,
-  FaClosedCaptioning,
 } from "react-icons/fa";
-import { MdSpeed, MdHighQuality } from "react-icons/md";
 
-const VideoPlayer = ({ src, poster, title, onNext, onPrev }) => {
-  const videoRef = useRef(null);
-  const progressRef = useRef(null);
+const VideoPlayer = ({ youtubeId, onNext, onPrev }) => {
+  const playerRef = useRef(null);
+  const playerContainerRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [quality, setQuality] = useState("auto");
-  const [showSubtitle, setShowSubtitle] = useState(false);
+  const [controlsTimeout, setControlsTimeout] = useState(null);
+  const [player, setPlayer] = useState(null);
 
-  // Format time (seconds to MM:SS)
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  // Extract YouTube ID from URL if full URL is provided
+  const extractVideoId = (url) => {
+    if (!url) return '';
+    
+    // Handle various YouTube URL formats
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    
+    return (match && match[2].length === 11) ? match[2] : url;
   };
 
-  // Handle play/pause
-  const togglePlay = () => {
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
+  const videoId = extractVideoId(youtubeId);
+
+  useEffect(() => {
+    // Load YouTube IFrame API
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
-    setIsPlaying(!isPlaying);
+
+    // Initialize player once API is ready
+    window.onYouTubeIframeAPIReady = () => {
+      const newPlayer = new window.YT.Player(playerRef.current, {
+        height: '100%',
+        width: '100%',
+        videoId: videoId,
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          modestbranding: 1,
+          rel: 0,
+          enablejsapi: 1,
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange,
+        }
+      });
+      setPlayer(newPlayer);
+    };
+
+    // If API is already loaded
+    if (window.YT && window.YT.Player) {
+      window.onYouTubeIframeAPIReady();
+    }
+
+    return () => {
+      if (player) {
+        player.destroy();
+      }
+      if (controlsTimeout) {
+        clearTimeout(controlsTimeout);
+      }
+    };
+  }, [videoId]);
+
+  const onPlayerReady = (event) => {
+    const duration = event.target.getDuration();
+    setDuration(duration);
+    updateProgressBar();
+    event.target.setVolume(volume);
+    if (isMuted) {
+      event.target.mute();
+    }
   };
 
-  // Handle progress bar click
-  const handleProgressClick = (e) => {
-    const rect = progressRef.current.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    videoRef.current.currentTime = pos * videoRef.current.duration;
+  const onPlayerStateChange = (event) => {
+    switch (event.data) {
+      case window.YT.PlayerState.PLAYING:
+        setIsPlaying(true);
+        startProgressTimer();
+        break;
+      case window.YT.PlayerState.PAUSED:
+        setIsPlaying(false);
+        stopProgressTimer();
+        break;
+      case window.YT.PlayerState.ENDED:
+        setIsPlaying(false);
+        stopProgressTimer();
+        if (onNext) onNext();
+        break;
+      default:
+        break;
+    }
   };
 
-  // Handle volume change
+  let progressInterval;
+  const startProgressTimer = () => {
+    stopProgressTimer(); // Clear existing interval if any
+    progressInterval = setInterval(updateProgressBar, 1000);
+  };
+
+  const stopProgressTimer = () => {
+    if (progressInterval) {
+      clearInterval(progressInterval);
+    }
+  };
+
+  const updateProgressBar = () => {
+    if (player && typeof player.getCurrentTime === 'function') {
+      try {
+        const current = player.getCurrentTime();
+        const duration = player.getDuration();
+        setCurrentTime(current);
+        setProgress((current / duration) * 100);
+      } catch (e) {
+        console.error("Error updating progress:", e);
+      }
+    }
+  };
+
+  const handleMouseMove = () => {
+    setShowControls(true);
+    if (controlsTimeout) {
+      clearTimeout(controlsTimeout);
+    }
+    setControlsTimeout(
+      setTimeout(() => {
+        setShowControls(false);
+      }, 3000)
+    );
+  };
+
+  const togglePlay = () => {
+    if (!player) return;
+    
+    if (isPlaying) {
+      player.pauseVideo();
+    } else {
+      player.playVideo();
+    }
+  };
+
   const handleVolumeChange = (e) => {
-    const newVolume = e.target.value;
-    videoRef.current.volume = newVolume;
+    const newVolume = parseInt(e.target.value);
+    if (!player) return;
+    
+    player.setVolume(newVolume);
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
   };
 
-  // Toggle mute
   const toggleMute = () => {
-    videoRef.current.muted = !isMuted;
+    if (!player) return;
+    
+    if (isMuted) {
+      player.unMute();
+      setVolume(volume > 0 ? volume : 50);
+    } else {
+      player.mute();
+    }
     setIsMuted(!isMuted);
   };
 
-  // Toggle fullscreen
   const toggleFullscreen = () => {
+    if (!playerContainerRef.current) return;
+    
     if (!isFullscreen) {
-      videoRef.current.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-    setIsFullscreen(!isFullscreen);
-  };
-
-  // Update progress bar
-  const updateProgress = () => {
-    const currentProgress =
-      (videoRef.current.currentTime / videoRef.current.duration) * 100;
-    setProgress(currentProgress);
-    setCurrentTime(videoRef.current.currentTime);
-  };
-
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!videoRef.current) return;
-
-      switch (e.key) {
-        case " ":
-          e.preventDefault();
-          togglePlay();
-          break;
-        case "ArrowRight":
-          videoRef.current.currentTime += 5;
-          break;
-        case "ArrowLeft":
-          videoRef.current.currentTime -= 5;
-          break;
-        case "ArrowUp":
-          videoRef.current.volume = Math.min(videoRef.current.volume + 0.1, 1);
-          setVolume(videoRef.current.volume);
-          setIsMuted(false);
-          break;
-        case "ArrowDown":
-          videoRef.current.volume = Math.max(videoRef.current.volume - 0.1, 0);
-          setVolume(videoRef.current.volume);
-          setIsMuted(videoRef.current.volume === 0);
-          break;
-        case "f":
-          toggleFullscreen();
-          break;
-        case "m":
-          toggleMute();
-          break;
-        default:
-          break;
+      if (playerContainerRef.current.requestFullscreen) {
+        playerContainerRef.current.requestFullscreen();
+      } else if (playerContainerRef.current.webkitRequestFullscreen) {
+        playerContainerRef.current.webkitRequestFullscreen();
+      } else if (playerContainerRef.current.msRequestFullscreen) {
+        playerContainerRef.current.msRequestFullscreen();
       }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isPlaying, isMuted, isFullscreen]);
-
-  // Hide controls after 3 seconds of inactivity
-  useEffect(() => {
-    let timeout;
-    if (isPlaying) {
-      timeout = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
     }
-    return () => clearTimeout(timeout);
-  }, [isPlaying, showControls]);
+  };
+
+  const handleFullscreenChange = () => {
+    setIsFullscreen(!!document.fullscreenElement);
+  };
+
+  useEffect(() => {
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleProgressClick = (e) => {
+    if (!player || !player.getDuration) return;
+    
+    const rect = e.target.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    player.seekTo(player.getDuration() * pos, true);
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
 
   return (
-    <PlayerContainer
-      onMouseMove={() => setShowControls(true)}
-      onMouseLeave={() => {
-        if (isPlaying) {
-          setTimeout(() => setShowControls(false), 1000);
-        }
-      }}
+    <PlayerContainer 
+      ref={playerContainerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setShowControls(false)}
     >
-      <Video
-        ref={videoRef}
-        src={src}
-        poster={poster}
-        onClick={togglePlay}
-        onTimeUpdate={updateProgress}
-        onLoadedMetadata={() => setDuration(videoRef.current.duration)}
-        onEnded={onNext}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      />
-
+      <YouTubeContainer ref={playerRef} />
+      
       {showControls && (
         <ControlsContainer>
-          <TopControls>
-            <VideoTitle>{title}</VideoTitle>
-          </TopControls>
-
-          <CenterControls>
-            <ControlButton onClick={onPrev}>
-              <FaStepBackward />
-            </ControlButton>
-            <ControlButton onClick={togglePlay}>
-              {isPlaying ? <FaPause /> : <FaPlay />}
-            </ControlButton>
-            <ControlButton onClick={onNext}>
-              <FaStepForward />
-            </ControlButton>
-          </CenterControls>
-
+          <ProgressBar onClick={handleProgressClick}>
+            <Progress progress={progress} />
+          </ProgressBar>
+          
           <BottomControls>
-            <ProgressBar ref={progressRef} onClick={handleProgressClick}>
-              <Progress $progress={progress} />
-              <ProgressHandle $progress={progress} />
-            </ProgressBar>
-
             <TimeInfo>
               {formatTime(currentTime)} / {formatTime(duration)}
             </TimeInfo>
-
+            
             <ControlGroup>
-              <ControlButton onClick={toggleMute}>
-                {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+              {onPrev && <ControlButton onClick={onPrev}><FaStepBackward /></ControlButton>}
+              <ControlButton onClick={togglePlay}>
+                {isPlaying ? <FaPause /> : <FaPlay />}
               </ControlButton>
-              <VolumeSlider
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-              />
+              {onNext && <ControlButton onClick={onNext}><FaStepForward /></ControlButton>}
             </ControlGroup>
-
+            
             <ControlGroup>
-              <ControlButton onClick={() => setShowSettings(!showSettings)}>
-                <MdSpeed /> {playbackRate}x
+              <VolumeContainer>
+                <ControlButton onClick={toggleMute}>
+                  {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+                </ControlButton>
+                <VolumeSlider
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                />
+              </VolumeContainer>
+              <ControlButton onClick={toggleFullscreen}>
+                {isFullscreen ? <FaCompress /> : <FaExpand />}
               </ControlButton>
-              {showSettings && (
-                <SettingsMenu>
-                  <SettingsItem
-                    active={playbackRate === 0.5}
-                    onClick={() => {
-                      videoRef.current.playbackRate = 0.5;
-                      setPlaybackRate(0.5);
-                    }}
-                  >
-                    0.5x
-                  </SettingsItem>
-                  <SettingsItem
-                    active={playbackRate === 1}
-                    onClick={() => {
-                      videoRef.current.playbackRate = 1;
-                      setPlaybackRate(1);
-                    }}
-                  >
-                    1x (Normal)
-                  </SettingsItem>
-                  <SettingsItem
-                    active={playbackRate === 1.5}
-                    onClick={() => {
-                      videoRef.current.playbackRate = 1.5;
-                      setPlaybackRate(1.5);
-                    }}
-                  >
-                    1.5x
-                  </SettingsItem>
-                  <SettingsItem
-                    active={playbackRate === 2}
-                    onClick={() => {
-                      videoRef.current.playbackRate = 2;
-                      setPlaybackRate(2);
-                    }}
-                  >
-                    2x
-                  </SettingsItem>
-                  <Divider />
-                  <SettingsItem
-                    active={quality === "auto"}
-                    onClick={() => setQuality("auto")}
-                  >
-                    <MdHighQuality /> Auto Quality
-                  </SettingsItem>
-                  <SettingsItem
-                    active={quality === "1080p"}
-                    onClick={() => setQuality("1080p")}
-                  >
-                    1080p
-                  </SettingsItem>
-                  <SettingsItem
-                    active={quality === "720p"}
-                    onClick={() => setQuality("720p")}
-                  >
-                    720p
-                  </SettingsItem>
-                  <Divider />
-                  <SettingsItem
-                    active={showSubtitle}
-                    onClick={() => setShowSubtitle(!showSubtitle)}
-                  >
-                    <FaClosedCaptioning /> Subtitles{" "}
-                    {showSubtitle ? "ON" : "OFF"}
-                  </SettingsItem>
-                </SettingsMenu>
-              )}
             </ControlGroup>
-
-            <ControlButton onClick={toggleFullscreen}>
-              {isFullscreen ? <FaCompress /> : <FaExpand />}
-            </ControlButton>
           </BottomControls>
         </ControlsContainer>
-      )}
-
-      {!isPlaying && showControls && (
-        <PlayOverlay onClick={togglePlay}>
-          <FaPlay size={48} />
-        </PlayOverlay>
       )}
     </PlayerContainer>
   );
 };
 
-// Styled Components
 const PlayerContainer = styled.div`
   position: relative;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 800px;
   background-color: #000;
   border-radius: 8px;
   overflow: hidden;
   aspect-ratio: 16/9;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
-const Video = styled.video`
+const YouTubeContainer = styled.div`
   width: 100%;
   height: 100%;
-  display: block;
-  cursor: pointer;
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
 `;
 
 const ControlsContainer = styled.div`
@@ -313,69 +308,81 @@ const ControlsContainer = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: opacity 0.3s ease;
-`;
-
-const TopControls = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const VideoTitle = styled.h3`
-  color: white;
-  font-size: 1.2rem;
-  margin: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-`;
-
-const CenterControls = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 10px;
+  transition: opacity 0.3s;
+  z-index: 10;
 `;
 
 const BottomControls = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  margin-top: 5px;
+`;
+
+const ControlGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const ControlButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  &:hover {
+    opacity: 0.8;
+  }
+  &:focus {
+    outline: none;
+  }
 `;
 
 const ProgressBar = styled.div`
-  flex-grow: 1;
-  height: 6px;
-  background-color: rgba(255, 255, 255, 0.2);
+  height: 5px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
   cursor: pointer;
-  position: relative;
+  margin-bottom: 8px;
 `;
 
 const Progress = styled.div`
   height: 100%;
-  width: ${(props) => props.$progress}%;
-  background-color: #ff5722;
+  width: ${props => props.progress}%;
+  background: #ff0000;
   border-radius: 3px;
+  transition: width 0.2s ease;
 `;
 
-const ProgressHandle = styled.div`
-  position: absolute;
-  top: 50%;
-  left: ${(props) => props.$progress}%;
-  width: 12px;
-  height: 12px;
-  background-color: #ff5722;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+const VolumeContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
 
-  ${ProgressBar}:hover & {
+const VolumeSlider = styled.input`
+  width: 70px;
+  -webkit-appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+  }
+  
+  &:hover {
     opacity: 1;
   }
 `;
@@ -387,116 +394,5 @@ const TimeInfo = styled.span`
   text-align: center;
 `;
 
-const ControlGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-`;
-
-const ControlButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #ff5722;
-  }
-`;
-
-const VolumeSlider = styled.input`
-  width: 80px;
-  height: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  outline: none;
-  opacity: 0;
-  transition: opacity 0.2s ease, width 0.2s ease;
-
-  &::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #ff5722;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  ${ControlGroup}:hover & {
-    opacity: 1;
-    width: 100px;
-  }
-`;
-
-const SettingsMenu = styled.div`
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  background-color: rgba(20, 20, 20, 0.95);
-  border-radius: 4px;
-  padding: 0.5rem;
-  min-width: 150px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-`;
-
-const SettingsItem = styled.div`
-  color: ${(props) => (props.active ? "#ff5722" : "white")};
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: 2px;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  &:hover {
-    background-color: rgba(255, 87, 34, 0.2);
-  }
-`;
-
-const Divider = styled.div`
-  height: 1px;
-  background-color: rgba(255, 255, 255, 0.1);
-  margin: 0.3rem 0;
-`;
-
-const PlayOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  z-index: 2;
-
-  & > svg {
-    color: white;
-    opacity: 0.8;
-    transition: all 0.2s ease;
-  }
-
-  &:hover > svg {
-    opacity: 1;
-    transform: scale(1.2);
-    color: #ff5722;
-  }
-`;
-
 export default VideoPlayer;
+

@@ -68,11 +68,10 @@ function App() {
 
           <section className="component-section">
             <h2>VideoPlayer</h2>
-            <VideoPlayer
-              src="https://example.com/sample.mp4"
-              poster="https://via.placeholder.com/800x450?text=Video+Thumbnail"
-              title="Sample Video"
-            />
+            <VideoPlayer 
+              youtubeId="https://youtu.be/dQw4w9WgXcQ?si=Dopk1_PqRJaqf9m0" 
+              
+/>
           </section>
 
           <section className="component-section">
