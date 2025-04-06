@@ -5,6 +5,17 @@ import { FaPlay, FaPlus, FaStar } from "react-icons/fa";
 const AnimeCard = ({ anime, onCardClick }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Map your AnimeData structure to match the expected props
+  const mappedAnime = {
+    title: anime.name,
+    imageUrl: anime.image,
+    rating: anime.rate,
+    type: anime.category,
+    episodes: Math.floor(Math.random() * 12) + 1, // Example: Random episode count
+    year: anime.year,
+    isNew: parseInt(anime.year) >= 2020, // Mark as "NEW" if year >= 2020
+  };
+
   return (
     <CardContainer
       onClick={() => onCardClick(anime)}
@@ -12,14 +23,14 @@ const AnimeCard = ({ anime, onCardClick }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <ImageContainer>
-        <AnimeImage src={anime.imageUrl} alt={anime.title} />
+        <AnimeImage src={mappedAnime.imageUrl} alt={mappedAnime.title} />
 
         {isHovered && (
           <HoverOverlay>
             <TopBadges>
-              {anime.isNew && <NewBadge>NEW</NewBadge>}
+              {mappedAnime.isNew && <NewBadge>NEW</NewBadge>}
               <RatingBadge>
-                <FaStar /> {anime.rating}
+                <FaStar /> {mappedAnime.rating}
               </RatingBadge>
             </TopBadges>
 
@@ -33,11 +44,11 @@ const AnimeCard = ({ anime, onCardClick }) => {
                 </AddButton>
               </ActionButtons>
 
-              <AnimeTitle>{anime.title}</AnimeTitle>
+              <AnimeTitle>{mappedAnime.title}</AnimeTitle>
               <AnimeDetails>
-                <DetailItem>{anime.type}</DetailItem>
-                <DetailItem>{anime.episodes} eps</DetailItem>
-                <DetailItem>{anime.year}</DetailItem>
+                <DetailItem>{mappedAnime.type}</DetailItem>
+                <DetailItem>{mappedAnime.episodes} eps</DetailItem>
+                <DetailItem>{mappedAnime.year}</DetailItem>
               </AnimeDetails>
             </HoverContent>
           </HoverOverlay>
@@ -46,9 +57,9 @@ const AnimeCard = ({ anime, onCardClick }) => {
 
       {!isHovered && (
         <CardFooter>
-          <FooterTitle>{anime.title}</FooterTitle>
+          <FooterTitle>{mappedAnime.title}</FooterTitle>
           <FooterRating>
-            <FaStar color="#FFD700" /> {anime.rating}
+            <FaStar color="#FFD700" /> {mappedAnime.rating}
           </FooterRating>
         </CardFooter>
       )}
@@ -58,14 +69,14 @@ const AnimeCard = ({ anime, onCardClick }) => {
 
 // Animations
 const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
+    from { opacity: 0; }
+    to { opacity: 1; }
+  `;
 
 const slideUp = keyframes`
-  from { transform: translateY(10px); }
-  to { transform: translateY(0); }
-`;
+    from { transform: translateY(10px); }
+    to { transform: translateY(0); }
+  `;
 
 // Styled Components
 const CardContainer = styled.div`

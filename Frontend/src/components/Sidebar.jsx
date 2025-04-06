@@ -8,37 +8,53 @@ import {
   FaHistory,
   FaUser,
   FaCog,
-  FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
 
 const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
   const navItems = [
-    { icon: <FaHome />, label: "Home", path: "/" },
-    { icon: <FaFire />, label: "Trending", path: "/trending" },
-    { icon: <FaCalendarAlt />, label: "Schedule", path: "/schedule" },
-    { icon: <FaHistory />, label: "History", path: "/history" },
-    { icon: <FaUser />, label: "Profile", path: "/profile" },
-    { icon: <FaCog />, label: "Settings", path: "/settings" },
+    { icon: <FaHome size={20} />, label: "Home", path: "/" },
+    { icon: <FaFire size={20} />, label: "Trending", path: "/trending" },
+    { icon: <FaCalendarAlt size={20} />, label: "Schedule", path: "/schedule" },
+    { icon: <FaHistory size={20} />, label: "History", path: "/history" },
+    { icon: <FaUser size={20} />, label: "Profile", path: "/profile" },
+    { icon: <FaCog size={20} />, label: "Settings", path: "/settings" },
   ];
 
   return (
-    <SidebarContainer $collapsed={isCollapsed}>
-      <ToggleButton onClick={toggleSidebar}>
-        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+    <SidebarContainer
+      $collapsed={isCollapsed}
+      $hovered={isHovered}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <ToggleButton
+        onClick={toggleSidebar}
+        $collapsed={isCollapsed}
+        $hovered={isHovered}
+      >
+        <FaChevronRight size={16} />
       </ToggleButton>
 
       <NavItems>
         {navItems.map((item, index) => (
-          <NavItem key={index} to={item.path} $collapsed={isCollapsed}>
+          <NavItem
+            key={index}
+            to={item.path}
+            $collapsed={isCollapsed}
+            $hovered={isHovered}
+          >
             <IconWrapper $collapsed={isCollapsed}>{item.icon}</IconWrapper>
-            {!isCollapsed && <Label>{item.label}</Label>}
+            <Label $collapsed={isCollapsed} $hovered={isHovered}>
+              {item.label}
+            </Label>
           </NavItem>
         ))}
       </NavItems>
@@ -52,39 +68,46 @@ const SidebarContainer = styled.div`
   left: 0;
   top: 0;
   height: 100vh;
-  width: ${({ $collapsed }) => ($collapsed ? "80px" : "250px")};
+  width: ${({ $collapsed, $hovered }) =>
+    $collapsed ? ($hovered ? "200px" : "60px") : "200px"};
   background-color: #1a1a1a;
-  color: white;
-  padding: 1rem;
+  padding: 0;
   z-index: 900;
-  transition: all 0.3s ease;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  transition: width 0.2s ease;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 `;
 
 const ToggleButton = styled.button`
   background: none;
   border: none;
   color: #ff5722;
-  font-size: 1.2rem;
   cursor: pointer;
-  align-self: flex-end;
-  margin-bottom: 2rem;
-  padding: 0.5rem;
-  transition: all 0.3s ease;
+  margin: 15px 0;
+  padding: 5px;
+  align-self: center;
+  transition: all 0.2s ease;
   border-radius: 50%;
+  transform: ${({ $collapsed }) =>
+    $collapsed ? "rotate(0deg)" : "rotate(180deg)"};
+  opacity: ${({ $hovered, $collapsed }) =>
+    $hovered || !$collapsed ? "1" : "0.5"};
 
   &:hover {
     background-color: rgba(255, 87, 34, 0.2);
-    transform: scale(1.1);
+    opacity: 1;
   }
 `;
 
 const NavItems = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  align-items: ${({ $collapsed, $hovered }) =>
+    $collapsed && !$hovered ? "center" : "flex-start"};
+  padding: 0 10px;
+  gap: 5px;
+  width: 100%;
 `;
 
 const NavItem = styled(NavLink)`
@@ -92,11 +115,13 @@ const NavItem = styled(NavLink)`
   align-items: center;
   text-decoration: none;
   color: #b3b3b3;
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  width: ${({ $collapsed }) => ($collapsed ? "fit-content" : "100%")};
-  margin: 0 auto;
+  padding: 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  width: ${({ $collapsed, $hovered }) =>
+    $collapsed && !$hovered ? "auto" : "calc(100% - 10px)"};
+  justify-content: ${({ $collapsed, $hovered }) =>
+    $collapsed && !$hovered ? "center" : "flex-start"};
 
   &:hover {
     background-color: #2a2a2a;
@@ -110,16 +135,23 @@ const NavItem = styled(NavLink)`
 `;
 
 const IconWrapper = styled.div`
-  font-size: 1.3rem;
-  margin-right: ${({ $collapsed }) => ($collapsed ? "0" : "1rem")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
 `;
 
 const Label = styled.span`
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  margin-left: 15px;
   white-space: nowrap;
-  opacity: ${({ $collapsed }) => ($collapsed ? "0" : "1")};
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
+  opacity: ${({ $collapsed, $hovered }) =>
+    $collapsed && !$hovered ? "0" : "1"};
+  width: ${({ $collapsed, $hovered }) =>
+    $collapsed && !$hovered ? "0" : "auto"};
+  overflow: hidden;
 `;
 
 export default Sidebar;
