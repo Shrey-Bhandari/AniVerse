@@ -7,7 +7,7 @@ import {
   FaCog,
   FaSignOutAlt,
 } from "react-icons/fa";
-import AnimeData from "../data/AnimeData";
+import AnimeData from "../data/AnimeVideoData";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("watching");

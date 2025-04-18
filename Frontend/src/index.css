@@ -1,14 +1,18 @@
-/* Remove the flex centering from body */
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #141414; /* Dark anime-themed background */
-  color: #e0e0e0;
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Keep the rest of your :root styles */
 :root {
+  --primary-color: #ff3333;
+  --primary-light: #ff5555;
+  --primary-dark: #cc0000;
+  --accent-color: #e50914;
+  --bg-dark: #0a0a0a;
+  --bg-card: #121212;
+  --bg-light: #1a1a1a;
+  --text-light: #e0e0e0;
+  --text-dim: #999999;
+  --border-color: #222222;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-highlight: rgba(255, 51, 51, 0.2);
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -16,6 +20,114 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: 
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  overflow-x: hidden;
+}
+
+/* Better buttons */
+button {
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+}
+
+/* Improved focus states for accessibility */
+:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for all elements */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-card);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-light);
+}
+
+/* Better links */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+/* Image improvements */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Improved text selection */
+::selection {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Animation for page transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulse animation for interactive elements */
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Special styling for the watch page */
+.watch-page-container {
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+.watch-page-container .main-content {
+  margin-left: 0;
+  padding-top: 0;
 }
 
 /* Remove the light mode styles or adjust them */

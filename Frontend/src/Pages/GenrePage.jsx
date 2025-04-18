@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { FaChevronLeft, FaSearch, FaFilter } from "react-icons/fa";
-import AnimeData from "../data/AnimeData";
+import AnimeData from "../data/AnimeVideoData";
 import CategoriesData from "../data/CategoriesData";
 import AnimeCard from "../components/AnimeCard";
 

@@ -4,7 +4,48 @@ import AnimeList from "../components/AnimeList";
 import Carousel from "../components/Carousel";
 
 function HomePage() {
-  // Temporary mock data for demonstration
+  // Carousel items with proper data for each anime
+  const carouselItems = [
+    
+    {
+      id: "one-piece",
+      title: "One Piece",
+      description: "Follow Monkey D. Luffy and his swashbuckling crew in their search for the ultimate treasure, the One Piece, as they journey across a world of pirates, islands, and monsters on the Grand Line.",
+      imageUrl: "https://4kwallpapers.com/images/wallpapers/one-piece-gear-5-luffy-3840x2160-12504.png",
+      rating: 9.7,
+      linkTo: "/watch/one-piece",
+      videoId: "JYKbdHzAXRk"
+    },
+    {
+      id: "solo-leveling",
+      title: "Solo Leveling",
+      description: "In a world where hunters with special abilities battle dangerous monsters to protect humanity, Sung Jin-Woo is the weakest of all hunters—until a mysterious System grants him the power to level up.",
+      imageUrl: "https://4kwallpapers.com/images/wallpapers/sung-jinwoo-dragon-2560x1440-15351.jpg",
+      rating: 9.5,
+      linkTo: "/watch/solo-leveling",
+      videoId: "XLFA7MWzYac"
+    },
+    {
+      id: "attack-on-titan",
+      title: "Attack on Titan",
+      description: "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, giant humanoid beings who devour humans seemingly without reason, Eren Yeager vows to reclaim the world.",
+      imageUrl: "https://wallpapercat.com/w/full/1/7/0/25940-3840x2160-desktop-4k-attack-on-titan-the-final-season-wallpaper-image.jpg",
+      rating: 9.4,
+      linkTo: "/watch/attack-on-titan",
+      videoId: "M_OauHnAFc8"
+    },
+    {
+      id: "demon-slayer",
+      title: "Demon Slayer",
+      description: "After his family was brutally murdered and his sister turned into a demon, Tanjiro Kamado embarks on a journey to become a demon slayer and find a cure for his sister.",
+      imageUrl: "https://wallpapers.com/images/featured/demon-slayer-4k-pictures-5v5lz47uso2tx2kr.jpg",
+      rating: 9.3,
+      linkTo: "/watch/demon-slayer",
+      videoId: "VQGCKyvzIM4"
+    }
+  ];
+
+  // Mock data for anime cards
   const mockAnime = {
     id: 1,
     title: "Attack on Titan",
@@ -14,47 +55,11 @@ function HomePage() {
     episodes: 16,
     year: 2023,
     isNew: true,
-    description: "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, giant humanoid beings who devour humans seemingly without reason."
+    youtubeId: "M_OauHnAFc8"
   };
-  
-  // Create carousel items with proper structure
-  // Better placeholder images
-  const carouselItems = [
-    {
-      id: 1,
-      title: "One Piece",
-      description: "Follow Monkey D. Luffy and his swashbuckling crew in their search for the ultimate treasure, the One Piece, as they journey across a world of pirates, islands, and monsters on the Grand Line.",
-      imageUrl: "https://via.placeholder.com/1200x600/0066cc/ffffff?text=One+Piece",
-      rating: 9.7,
-      linkTo: "/watch/one-piece"
-    },
-    {
-      id: 2,
-      title: "Solo Leveling",
-      description: "In a world where hunters with special abilities battle dangerous monsters to protect humanity, Sung Jin-Woo is the weakest of all hunters—until a mysterious System grants him the power to level up.",
-      imageUrl: "https://images6.alphacoders.com/137/1372163.jpeg",
-      rating: 9.5,
-      linkTo: "/watch/solo-leveling"
-    },
-    {
-      id: 3,
-      title: "Attack on Titan",
-      description: "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, giant humanoid beings who devour humans seemingly without reason, Eren Yeager vows to reclaim the world.",
-      imageUrl: "https://wallpapercat.com/w/full/1/7/0/25940-3840x2160-desktop-4k-attack-on-titan-the-final-season-wallpaper-image.jpg",
-      rating: 9.4,
-      linkTo: "/watch/attack-on-titan"
-    },
-    {
-      id: 4,
-      title: "Demon Slayer",
-      description: "After his family was brutally murdered and his sister turned into a demon, Tanjiro Kamado embarks on a journey to become a demon slayer and find a cure for his sister.",
-      imageUrl: "https://wallpapers.com/images/featured/demon-slayer-4k-pictures-5v5lz47uso2tx2kr.jpg",
-      rating: 9.3,
-      linkTo: "/watch/demon-slayer"
-    }
-  ];
+
   return (
-    <div className="layout">
+    <div className="home-page">
       <Sidebar />
       
       <main className="main-content">

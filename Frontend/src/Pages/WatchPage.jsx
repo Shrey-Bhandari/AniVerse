@@ -1,5 +1,9 @@
-import React, { useState, useRef } from 'react';
-import VideoPlayer from "../components2/VideoPlayer"; // Adjust the path if necessary
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import VideoPlayer from "../components2/VideoPlayer"; 
+import { useParams } from "react-router-dom";
+import { AnimeContext } from "../Context/AnimeContext";
+import AnimeVideoData from '../data/AnimeVideoData';
+import styled from 'styled-components';
 
 // Import icons directly to avoid Lucide dependency
 const icons = {
@@ -74,551 +78,643 @@ const icons = {
   )
 };
 
-export default function AnimeSite() {
+export default function WatchPage() {
+  const { id } = useParams();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState(1);
   const [activeTab, setActiveTab] = useState('SUB');
   const [currentServer, setCurrentServer] = useState('HD-1');
-  const videoRef = useRef(null);
-  
-  const episodes = [
-    { num: 1, title: "You aren't e-rank, are you?" },
-    { num: 2, title: "I suppose you aren't aware" },
-    { num: 3, title: "Still a long way to go" },
-    { num: 4, title: "I need to stop faking" },
-    { num: 5, title: "This is what we're trained to..." },
-    { num: 6, title: "Don't look down on my guys" },
-    { num: 7, title: "The 10th s-rank hunter" },
-    { num: 8, title: "Looking up was tiring me out" },
-    { num: 9, title: "It was all worth it" },
-    { num: 10, title: "We need a hero" },
-    { num: 11, title: "It's going to get even more..." },
-    { num: 12, title: "Are you the king of humans?" },
-    { num: 13, title: "Go to the next target" }
-  ];
+  const [currentVideoUrl, setCurrentVideoUrl] = useState("https://www.youtube.com/watch?v=XLFA7MWzYac");
+  const [animeInfo, setAnimeInfo] = useState({
+    title: "Solo Leveling",
+    episodes: 13,
+    description: "Sung Jin-Woo, dubbed the weakest hunter of all mankind, grows stronger by the day with the supernatural powers he has gained.",
+    rating: 9.7
+  });
+
+  useEffect(() => {
+    if (id && AnimeVideoData[id]) {
+      const firstEpisode = AnimeVideoData[id].episodes[0];
+      if (firstEpisode) {
+        setCurrentVideoUrl(`https://www.youtube.com/watch?v=${firstEpisode.videoId}`);
+        setActiveEpisode(firstEpisode.num);
+      }
+      setAnimeInfo({
+        title: id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        episodes: AnimeVideoData[id].episodes.length,
+        description: "An amazing anime series that you must watch!",
+        rating: 9.5
+      });
+    }
+  }, [id]);
+
+  const handleEpisodeClick = (episodeNum) => {
+    setActiveEpisode(episodeNum);
+    if (id && AnimeVideoData[id]) {
+      const episode = AnimeVideoData[id].episodes.find(ep => ep.num === episodeNum);
+      if (episode) {
+        setCurrentVideoUrl(`https://www.youtube.com/watch?v=${episode.videoId}`);
+      }
+    }
+  };
+
+  const episodes = id && AnimeVideoData[id] 
+    ? AnimeVideoData[id].episodes 
+    : [
+        { num: 1, title: "You aren't e-rank, are you?" },
+        { num: 2, title: "I suppose you aren't aware" },
+        { num: 3, title: "Still a long way to go" },
+      ];
   
   const togglePlay = () => setIsPlaying(!isPlaying);
   const toggleMute = () => setIsMuted(!isMuted);
 
-  // CSS styles as object for inline styling
-  const styles = {
-    mainContainer: {
-      display: 'flex',
-      height: '100vh',
-      backgroundColor: '#000000',
-      color: '#e0e0e0',
-      fontFamily: 'Arial, sans-serif',
-      overflow: 'hidden'
-    },
-    sidebar: {
-      width: '300px',
-      backgroundColor: '#121212',
-      borderRight: '1px solid #3a0000',
-      overflowY: 'auto'
-    },
-    sidebarHeader: {
-      padding: '16px',
-      borderBottom: '1px solid #3a0000',
-      backgroundColor: '#000000'
-    },
-    sidebarTitle: {
-      color: '#ff3333',
-      fontWeight: 'bold',
-      marginBottom: '8px'
-    },
-    searchContainer: {
-      position: 'relative',
-      marginTop: '8px'
-    },
-    searchInput: {
-      width: '100%',
-      backgroundColor: '#1e1e1e',
-      border: '1px solid #3a0000',
-      color: '#e0e0e0',
-      padding: '4px 12px',
-      borderRadius: '4px'
-    },
-    searchIcon: {
-      position: 'absolute',
-      right: '8px',
-      top: '4px',
-      width: '16px',
-      height: '16px'
-    },
-    episodeItem: (isActive) => ({
-      display: 'flex',
-      alignItems: 'center',
-      padding: '12px',
-      borderBottom: '1px solid #222',
-      cursor: 'pointer',
-      backgroundColor: isActive ? 'rgba(150, 0, 0, 0.2)' : 'transparent',
-      borderLeft: isActive ? '4px solid #cc0000' : 'none',
-      transition: 'background-color 0.2s'
-    }),
-    episodeNumber: {
-      marginRight: '12px',
-      fontWeight: 'bold',
-      fontSize: '18px'
-    },
-    episodeTitle: {
-      flex: 1,
-      fontSize: '14px'
-    },
-    playIcon: {
-      marginLeft: '8px',
-      color: '#ff3333',
-      width: '18px',
-      height: '18px'
-    },
-    mainContent: {
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto'
-    },
-    videoContainer: {
-      position: 'relative',
-      width: '100%',
-      height: 'calc(100vh - 300px)', // Set explicit height
-      minHeight: '400px', // Set minimum height
-      backgroundColor: '#000',
-      overflow: 'hidden',
-      zIndex: 1 // Ensure video is above other elements
-    },
-    videoPlayer: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover'
-    },
-    videoControls: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-      padding: '16px'
-    },
-    progressBar: {
-      width: '100%',
-      height: '4px',
-      backgroundColor: '#333',
-      borderRadius: '2px',
-      marginBottom: '16px',
-      cursor: 'pointer',
-      position: 'relative'
-    },
-    progressFill: {
-      height: '100%',
-      width: '30%',
-      backgroundColor: '#cc0000',
-      borderRadius: '2px',
-      position: 'relative'
-    },
-    progressKnob: {
-      width: '12px',
-      height: '12px',
-      backgroundColor: '#ff3333',
-      borderRadius: '50%',
-      position: 'absolute',
-      right: '0',
-      top: '-4px'
-    },
-    controlsRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    },
-    controlGroup: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px'
-    },
-    controlButton: {
-      color: 'white',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      display: 'flex',
-      padding: '0',
-      transition: 'color 0.2s'
-    },
-    timeDisplay: {
-      fontSize: '14px'
-    },
-    playerOptions: {
-      position: 'absolute',
-      bottom: '0',
-      left: '0',
-      right: '0',
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '8px',
-      marginBottom: '64px'
-    },
-    optionButton: {
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      color: 'white',
-      padding: '4px 8px',
-      fontSize: '12px',
-      borderRadius: '4px',
-      margin: '0 4px',
-      border: 'none',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center'
-    },
-    optionIcon: {
-      marginRight: '4px',
-      width: '14px',
-      height: '14px'
-    },
-    episodeInfoBanner: {
-      backgroundColor: 'rgba(255, 105, 180, 0.2)',
-      padding: '12px',
-      textAlign: 'center',
-      borderTop: '1px solid #ff69b4',
-      borderBottom: '1px solid #ff69b4'
-    },
-    episodeInfoText: {
-      color: '#ffc0cb'
-    },
-    episodeInfoSubtext: {
-      color: '#ffc0cb',
-      fontSize: '12px',
-      marginTop: '4px'
-    },
-    serverOptionsContainer: {
-      padding: '16px',
-      backgroundColor: '#121212',
-      borderBottom: '1px solid #3a0000'
-    },
-    tabsContainer: {
-      display: 'flex',
-      marginBottom: '16px'
-    },
-    tab: (isActive) => ({
-      padding: '8px 16px',
-      cursor: 'pointer',
-      backgroundColor: isActive ? '#222' : '#121212',
-      color: isActive ? '#ff3333' : '#e0e0e0'
-    }),
-    serverButtons: {
-      display: 'flex',
-      gap: '8px'
-    },
-    serverButton: (isActive) => ({
-      padding: '8px 16px',
-      borderRadius: '4px',
-      border: 'none',
-      cursor: 'pointer',
-      backgroundColor: isActive ? '#cc0000' : '#222',
-      color: isActive ? 'white' : '#e0e0e0',
-      transition: 'background-color 0.2s'
-    }),
-    animeInfoContainer: {
-      padding: '16px',
-      backgroundColor: '#121212'
-    },
-    animeInfoContent: {
-      display: 'flex'
-    },
-    animeImage: {
-      marginRight: '16px',
-      height: '240px',
-      width: '180px',
-      objectFit: 'cover',
-      borderRadius: '4px',
-      border: '2px solid #3a0000'
-    },
-    animeDetails: {
-      flex: 1
-    },
-    animeTitle: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      color: '#ff3333',
-      marginBottom: '8px'
-    },
-    metadataTags: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      marginBottom: '12px'
-    },
-    metadataTag: {
-      padding: '4px 8px',
-      fontSize: '12px',
-      borderRadius: '4px'
-    },
-    rTag: {
-      backgroundColor: '#222'
-    },
-    hdTag: {
-      backgroundColor: '#cc0000'
-    },
-    langTag: {
-      backgroundColor: '#005a00',
-      display: 'flex',
-      alignItems: 'center'
-    },
-    langCounter: {
-      marginRight: '4px'
-    },
-    epTag: {
-      backgroundColor: '#00008b'
-    },
-    tvTag: {
-      backgroundColor: '#222'
-    },
-    durationTag: {
-      fontSize: '12px'
-    },
-    animeDescription: {
-      fontSize: '14px',
-      marginBottom: '16px',
-      lineHeight: '1.5'
-    },
-    animeInfo: {
-      fontSize: '14px',
-      marginBottom: '8px',
-      lineHeight: '1.5'
-    },
-    highlightedText: {
-      color: '#ff3333'
-    },
-    viewDetailButton: {
-      backgroundColor: '#cc0000',
-      color: 'white',
-      padding: '4px 12px',
-      borderRadius: '4px',
-      border: 'none',
-      fontSize: '14px',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s'
-    },
-    ratingContainer: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: '16px'
-    },
-    ratingStarContainer: {
-      display: 'flex',
-      alignItems: 'center'
-    },
-    ratingNumber: {
-      marginLeft: '4px',
-      fontSize: '18px',
-      fontWeight: 'bold'
-    },
-    voteButton: {
-      backgroundColor: '#cc0000',
-      color: 'white',
-      padding: '4px 12px',
-      borderRadius: '4px',
-      border: 'none',
-      fontSize: '14px',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s'
-    }
-  };
-  
   return (
-    <div style={styles.mainContainer}>
-      {/* Episode Sidebar */}
-      <div style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <h3 style={styles.sidebarTitle}>List of episodes:</h3>
-          <div style={styles.searchContainer}>
-            <input 
+    <WatchPageContainer className="watch-page-container">
+      <Sidebar>
+        <SidebarHeader>
+          <SidebarTitle>List of episodes:</SidebarTitle>
+          <SearchContainer>
+            <SearchInput 
               type="text" 
               placeholder="Number of ep"
-              style={styles.searchInput}
             />
-            <div style={styles.searchIcon}>
+            <SearchIcon>
               <icons.Search />
-            </div>
-          </div>
-        </div>
+            </SearchIcon>
+          </SearchContainer>
+        </SidebarHeader>
         
-        <div>
+        <EpisodesList>
           {episodes.map((episode) => (
-            <div 
+            <EpisodeItem 
               key={episode.num}
-              onClick={() => setActiveEpisode(episode.num)}
-              style={styles.episodeItem(activeEpisode === episode.num)}
+              onClick={() => handleEpisodeClick(episode.num)}
+              active={activeEpisode === episode.num}
             >
-              <div style={styles.episodeNumber}>{episode.num}</div>
-              <div style={styles.episodeTitle}>{episode.title}</div>
+              <EpisodeNumber>{episode.num}</EpisodeNumber>
+              <EpisodeTitle>{episode.title}</EpisodeTitle>
               {activeEpisode === episode.num && (
-                <div style={styles.playIcon}>
+                <PlayIcon>
                   <icons.Play />
-                </div>
+                </PlayIcon>
               )}
-            </div>
+            </EpisodeItem>
           ))}
-        </div>
-      </div>
+        </EpisodesList>
+      </Sidebar>
       
-      {/* Main Content */}
-      <div style={styles.mainContent}>
-       {/* Video Player */}
-<div style={styles.videoContainer}>
-  <VideoPlayer videoUrl="https://www.youtube.com/watch?v=XLFA7MWzYac&list=PLRe9ARNnYSY7k91_kB0mgGpMO6eVQqifN&index=1" />
-  
-  {/* Video Controls - Make these have a higher z-index
-  <div style={{...styles.videoControls, zIndex: 2}}>
-    {/* Progress Bar 
-    <div style={styles.progressBar}>
-      <div style={styles.progressFill}>
-        <div style={styles.progressKnob}></div>
-      </div>
-    </div>
-    
-    {/* Control Buttons
-    <div style={styles.controlsRow}>
-      <div style={styles.controlGroup}>
-        <button onClick={togglePlay} style={styles.controlButton}>
-          {isPlaying ? <icons.Pause /> : <icons.Play />}
-        </button>
-        <button onClick={toggleMute} style={styles.controlButton}>
-          {isMuted ? <icons.Mute /> : <icons.Volume />}
-        </button>
-        <span style={styles.timeDisplay}>00:02 / 23:40</span>
-      </div>
-      
-      <div style={styles.controlGroup}>
-        <button style={styles.controlButton}>
-          <icons.Settings />
-        </button>
-        <button style={styles.controlButton}>
-          <icons.Fullscreen />
-        </button>
-      </div>
-    </div>
-  </div>
-</div> */}
+      <MainContent>
+        <VideoContainer>
+          <VideoPlayer videoUrl={currentVideoUrl} />
+        </VideoContainer>
           
-          {/* Player Options */}
-          <div style={styles.playerOptions}>
-            <div style={styles.controlGroup}>
-              <button style={styles.optionButton}>
-                <span style={styles.optionIcon}><icons.List /></span>
-                Expand
-              </button>
-              <button style={styles.optionButton}>
-                Light: On
-              </button>
-              <button style={styles.optionButton}>
-                Auto Play: On
-              </button>
-              <button style={styles.optionButton}>
-                Auto Next: On
-              </button>
-              <button style={styles.optionButton}>
-                Auto Skip Intro: On
-              </button>
-            </div>
-            
-            <div style={styles.controlGroup}>
-              <button style={styles.optionButton}>
-                <icons.SkipBack />
-              </button>
-              <button style={styles.optionButton}>
-                <icons.SkipForward />
-              </button>
-            </div>
-          </div>
-        </div>
+        <PlayerOptions>
+          <ControlGroup>
+            <OptionButton>
+              <OptionIcon><icons.List /></OptionIcon>
+              Expand
+            </OptionButton>
+            <OptionButton>
+              Light: On
+            </OptionButton>
+            <OptionButton>
+              Auto Play: On
+            </OptionButton>
+            <OptionButton>
+              Auto Next: On
+            </OptionButton>
+            <OptionButton>
+              Auto Skip Intro: On
+            </OptionButton>
+          </ControlGroup>
+          
+          <ControlGroup>
+            <NavButton 
+              onClick={() => handleEpisodeClick(activeEpisode > 1 ? activeEpisode - 1 : activeEpisode)}
+              disabled={activeEpisode === 1}
+            >
+              <icons.SkipBack />
+            </NavButton>
+            <NavButton 
+              onClick={() => handleEpisodeClick(activeEpisode < episodes.length ? activeEpisode + 1 : activeEpisode)}
+              disabled={activeEpisode === episodes.length}
+            >
+              <icons.SkipForward />
+            </NavButton>
+          </ControlGroup>
+        </PlayerOptions>
+      
+        <EpisodeInfoBanner>
+          <EpisodeInfoText>You are watching Episode {activeEpisode}</EpisodeInfoText>
+          <EpisodeInfoSubtext>If current server doesn't work please try other servers</EpisodeInfoSubtext>
+        </EpisodeInfoBanner>
         
-        {/* Episode Info Banner */}
-        <div style={styles.episodeInfoBanner}>
-          <p style={styles.episodeInfoText}>You are watching Episode {activeEpisode}</p>
-          <p style={styles.episodeInfoSubtext}>If current server doesn't work please try other servers</p>
-        </div>
-        
-        {/* Server Options */}
-        <div style={styles.serverOptionsContainer}>
-          <div style={styles.tabsContainer}>
-            <div 
-              style={styles.tab(activeTab === 'SUB')}
+        <ServerOptionsContainer>
+          <TabsContainer>
+            <Tab 
+              active={activeTab === 'SUB'}
               onClick={() => setActiveTab('SUB')}
             >
               SUB:
-            </div>
-            <div
-              style={styles.tab(activeTab === 'DUB')}
+            </Tab>
+            <Tab
+              active={activeTab === 'DUB'}
               onClick={() => setActiveTab('DUB')}
             >
               DUB:
-            </div>
-          </div>
+            </Tab>
+          </TabsContainer>
           
-          <div style={styles.serverButtons}>
-            <button 
-              style={styles.serverButton(currentServer === 'HD-1')}
+          <ServerButtons>
+            <ServerButton 
+              active={currentServer === 'HD-1'}
               onClick={() => setCurrentServer('HD-1')}
             >
               HD-1
-            </button>
-            <button 
-              style={styles.serverButton(currentServer === 'HD-2')}
+            </ServerButton>
+            <ServerButton 
+              active={currentServer === 'HD-2'}
               onClick={() => setCurrentServer('HD-2')}
             >
               HD-2
-            </button>
-          </div>
-        </div>
+            </ServerButton>
+          </ServerButtons>
+        </ServerOptionsContainer>
         
-        {/* Anime Info */}
-        <div style={styles.animeInfoContainer}>
-          <div style={styles.animeInfoContent}>
-            <img 
-              src="/api/placeholder/180/240" 
-              alt="Solo Leveling" 
-              style={styles.animeImage} 
+        <AnimeInfoContainer>
+          <AnimeInfoContent>
+            <AnimeImage 
+              src={`https://via.placeholder.com/180x240/151515/ff5722?text=${animeInfo.title.replace(/\s+/g, '+')}`}
+              alt={animeInfo.title} 
             />
             
-            <div style={styles.animeDetails}>
-              <h1 style={styles.animeTitle}>Solo Leveling Season 2: Arise from the Shadow</h1>
+            <AnimeDetails>
+              <AnimeTitle>{animeInfo.title}</AnimeTitle>
               
-              <div style={styles.metadataTags}>
-                <span style={{...styles.metadataTag, ...styles.rTag}}>R</span>
-                <span style={{...styles.metadataTag, ...styles.hdTag}}>HD</span>
-                <span style={{...styles.metadataTag, ...styles.langTag}}>
-                  <span style={styles.langCounter}>13</span> 🗣️
-                </span>
-                <span style={{...styles.metadataTag, ...styles.epTag}}>13</span>
-                <span style={{...styles.metadataTag, ...styles.tvTag}}>TV</span>
-                <span style={styles.durationTag}>• 24m</span>
-              </div>
+              <MetadataTags>
+                <MetadataTag type="r">R</MetadataTag>
+                <MetadataTag type="hd">HD</MetadataTag>
+                <MetadataTag type="lang">
+                  <LangCounter>{animeInfo.episodes}</LangCounter> 🗣️
+                </MetadataTag>
+                <MetadataTag type="ep">{animeInfo.episodes}</MetadataTag>
+                <MetadataTag type="tv">TV</MetadataTag>
+                <DurationTag>• 24m</DurationTag>
+              </MetadataTags>
               
-              <p style={styles.animeDescription}>
-                Sung Jin-Woo, dubbed the weakest hunter of all mankind, grows stronger by the day with the 
-                supernatural powers he has gained. However, keeping his skills hidden becomes more difficult as 
-                dungeon-related incidents pile up around him.
-              </p>
+              <AnimeDescription>
+                {animeInfo.description}
+              </AnimeDescription>
               
-              <div style={styles.animeInfo}>
-                Aniverse is the best site to watch <span style={styles.highlightedText}>Solo Leveling Season 2: Arise from the Shadow</span> SUB 
-                online, or you can even watch <span style={styles.highlightedText}>Solo Leveling Season 2: Arise from the Shadow</span> DUB in HD quality. 
-                You can also find <span style={styles.highlightedText}>A-1 Pictures</span> anime on HiAnime website.
-              </div>
+              <AnimeExtraInfo>
+                Aniverse is the best site to watch <HighlightedText>{animeInfo.title}</HighlightedText> SUB 
+                online, or you can even watch <HighlightedText>{animeInfo.title}</HighlightedText> DUB in HD quality. 
+                You can also find <HighlightedText>A-1 Pictures</HighlightedText> anime on HiAnime website.
+              </AnimeExtraInfo>
               
-              <button style={styles.viewDetailButton}>View detail</button>
+              <ViewDetailButton>View detail</ViewDetailButton>
               
-              <div style={styles.ratingContainer}>
-                <div style={styles.ratingStarContainer}>
+              <RatingContainer>
+                <RatingStarContainer>
                   <icons.Star />
-                  <span style={styles.ratingNumber}>9.7</span>
-                </div>
-                <button style={styles.voteButton}>Vote now</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                  <RatingNumber>{animeInfo.rating}</RatingNumber>
+                </RatingStarContainer>
+                <VoteButton>Vote now</VoteButton>
+              </RatingContainer>
+            </AnimeDetails>
+          </AnimeInfoContent>
+        </AnimeInfoContainer>
+      </MainContent>
+    </WatchPageContainer>
   );
 }
+
+const WatchPageContainer = styled.div`
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: #000000;
+  color: #e0e0e0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+`;
+
+const Sidebar = styled.div`
+  width: 300px;
+  background-color: #0f0f0f;
+  border-right: 1px solid #3a0000;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #121212;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #ff3333;
+    border-radius: 3px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 230px;
+  }
+`;
+
+const SidebarHeader = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid #3a0000;
+  background-color: #0a0a0a;
+`;
+
+const SidebarTitle = styled.h3`
+  color: #ff3333;
+  font-weight: bold;
+  margin-bottom: 8px;
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+  margin-top: 8px;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  background-color: #1e1e1e;
+  border: 1px solid #3a0000;
+  color: #e0e0e0;
+  padding: 8px 30px 8px 12px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: #ff3333;
+    box-shadow: 0 0 0 2px rgba(255, 51, 51, 0.2);
+  }
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #ff3333;
+`;
+
+const EpisodesList = styled.div`
+  padding: 8px 0;
+`;
+
+const EpisodeItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #222;
+  cursor: pointer;
+  background-color: ${props => props.active ? 'rgba(255, 51, 51, 0.1)' : 'transparent'};
+  border-left: ${props => props.active ? '4px solid #ff3333' : '4px solid transparent'};
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: ${props => props.active ? 'rgba(255, 51, 51, 0.15)' : 'rgba(255, 255, 255, 0.05)'};
+  }
+`;
+
+const EpisodeNumber = styled.div`
+  margin-right: 12px;
+  font-weight: bold;
+  font-size: 18px;
+  min-width: 24px;
+  color: #ff3333;
+`;
+
+const EpisodeTitle = styled.div`
+  flex: 1;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const PlayIcon = styled.div`
+  margin-left: 8px;
+  color: #ff3333;
+  width: 18px;
+  height: 18px;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #ff3333;
+    border-radius: 4px;
+  }
+`;
+
+const VideoContainer = styled.div`
+  position: relative;
+  width: 100%;
+  background-color: #000;
+  overflow: hidden;
+`;
+
+const PlayerOptions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #0f0f0f;
+  border-bottom: 1px solid #222;
+`;
+
+const ControlGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  @media (max-width: 768px) {
+    gap: 4px;
+  }
+`;
+
+const OptionButton = styled.button`
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #e0e0e0;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 51, 51, 0.1);
+    border-color: rgba(255, 51, 51, 0.3);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+`;
+
+const OptionIcon = styled.span`
+  margin-right: 4px;
+  width: 14px;
+  height: 14px;
+`;
+
+const NavButton = styled.button`
+  background-color: rgba(255, 255, 255, 0.05);
+  color: ${props => props.disabled ? '#666' : '#e0e0e0'};
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 51, 51, 0.1);
+    border-color: rgba(255, 51, 51, 0.3);
+    transform: scale(1.1);
+  }
+  
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const EpisodeInfoBanner = styled.div`
+  background-color: rgba(255, 51, 51, 0.1);
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 51, 51, 0.2);
+  border-bottom: 1px solid rgba(255, 51, 51, 0.2);
+`;
+
+const EpisodeInfoText = styled.p`
+  color: #ff3333;
+  font-weight: bold;
+  margin: 0;
+`;
+
+const EpisodeInfoSubtext = styled.p`
+  color: #e0e0e0;
+  font-size: 12px;
+  margin: 4px 0 0;
+`;
+
+const ServerOptionsContainer = styled.div`
+  padding: 16px;
+  background-color: #0f0f0f;
+  border-bottom: 1px solid #222;
+`;
+
+const TabsContainer = styled.div`
+  display: flex;
+  margin-bottom: 16px;
+`;
+
+const Tab = styled.div`
+  padding: 8px 16px;
+  cursor: pointer;
+  background-color: ${props => props.active ? '#222' : '#0f0f0f'};
+  color: ${props => props.active ? '#ff3333' : '#e0e0e0'};
+  border-bottom: ${props => props.active ? '2px solid #ff3333' : 'none'};
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: ${props => props.active ? '#ff3333' : '#ff5555'};
+  }
+`;
+
+const ServerButtons = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const ServerButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background-color: ${props => props.active ? '#ff3333' : '#222'};
+  color: ${props => props.active ? 'white' : '#e0e0e0'};
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${props => props.active ? '#ff5555' : '#333'};
+    transform: translateY(-2px);
+  }
+`;
+
+const AnimeInfoContainer = styled.div`
+  padding: 24px 16px;
+  background-color: #0f0f0f;
+`;
+
+const AnimeInfoContent = styled.div`
+  display: flex;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const AnimeImage = styled.img`
+  margin-right: 16px;
+  height: 240px;
+  width: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #3a0000;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  
+  @media (max-width: 768px) {
+    margin: 0 auto 16px;
+    width: 150px;
+    height: 200px;
+  }
+`;
+
+const AnimeDetails = styled.div`
+  flex: 1;
+`;
+
+const AnimeTitle = styled.h1`
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff3333;
+  margin-top: 0;
+  margin-bottom: 12px;
+`;
+
+const MetadataTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+
+const MetadataTag = styled.span`
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  background-color: ${props => {
+    switch(props.type) {
+      case 'hd': return '#cc0000';
+      case 'lang': return '#005a00';
+      case 'ep': return '#00008b';
+      default: return '#222';
+    }
+  }};
+  color: white;
+  display: flex;
+  align-items: center;
+`;
+
+const LangCounter = styled.span`
+  margin-right: 4px;
+`;
+
+const DurationTag = styled.span`
+  font-size: 12px;
+  color: #999;
+`;
+
+const AnimeDescription = styled.p`
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  color: #e0e0e0;
+`;
+
+const AnimeExtraInfo = styled.div`
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  color: #999;
+`;
+
+const HighlightedText = styled.span`
+  color: #ff3333;
+`;
+
+const ViewDetailButton = styled.button`
+  background-color: #ff3333;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #ff5555;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 51, 51, 0.3);
+  }
+`;
+
+const RatingContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+`;
+
+const RatingStarContainer = styled.div`
+  display: flex;
+  align-items: center;
+  color: gold;
+`;
+
+const RatingNumber = styled.span`
+  margin-left: 4px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+`;
+
+const VoteButton = styled.button`
+  background-color: #ff3333;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #ff5555;
+    transform: translateY(-2px);
+  }
+`;
