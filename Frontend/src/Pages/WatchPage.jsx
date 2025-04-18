@@ -435,6 +435,24 @@ const VideoContainer = styled.div`
   width: 100%;
   background-color: #000;
   overflow: hidden;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 75vh; /* Make the video much larger */
+  
+  /* Make the video more prominent */
+  .video-player-wrapper {
+    border-radius: 0;
+    overflow: hidden;
+    height: 100%;
+  }
+  
+  /* Ensure the iframe takes full width and height */
+  iframe {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    z-index: 1;
+  }
 `;
 
 const PlayerOptions = styled.div`
