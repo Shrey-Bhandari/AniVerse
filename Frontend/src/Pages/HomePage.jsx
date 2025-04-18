@@ -1,266 +1,97 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import {
-  FaChevronRight,
-  FaChevronLeft,
-  FaFire,
-  FaClock,
-  FaStar,
-} from "react-icons/fa";
-import AnimeData from "../data/AnimeData";
-import CategoriesData from "../data/CategoriesData";
-import AnimeCard from "../components/AnimeCard";
+import React from "react";
+import Sidebar from "../components/Sidebar";
+import AnimeList from "../components/AnimeList";
 import Carousel from "../components/Carousel";
 
-const HomePage = () => {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [trendingAnime, setTrendingAnime] = useState([]);
-  const [recentAnime, setRecentAnime] = useState([]);
-
-  // Filter anime by category
-  const filteredAnime =
-    activeCategory === "All"
-      ? AnimeData
-      : AnimeData.filter((anime) => anime.category === activeCategory);
-
-  // Get trending anime (sorted by rating)
-  useEffect(() => {
-    const sortedByRating = [...AnimeData].sort((a, b) => b.rate - a.rate);
-    setTrendingAnime(sortedByRating.slice(0, 8));
-  }, []);
-
-  // Get recently added anime (sorted by year)
-  useEffect(() => {
-    const sortedByYear = [...AnimeData].sort((a, b) => b.year - a.year);
-    setRecentAnime(sortedByYear.slice(0, 8));
-  }, []);
-
-  // Carousel items
-  const carouselItems = AnimeData.slice(0, 5).map((anime) => ({
-    image: anime.image,
-    title: anime.name,
-    description: anime.desc,
-    meta: `${anime.year} • ${anime.category} • ⭐ ${anime.rate}`,
-    buttonText: "Watch Now",
-  }));
-
+function HomePage() {
+  // Temporary mock data for demonstration
+  const mockAnime = {
+    id: 1,
+    title: "Attack on Titan",
+    imageUrl: "https://via.placeholder.com/300x450?text=Anime+Poster",
+    rating: 9.1,
+    type: "TV",
+    episodes: 16,
+    year: 2023,
+    isNew: true,
+    description: "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, giant humanoid beings who devour humans seemingly without reason."
+  };
+  
+  // Create carousel items with proper structure
+  // Better placeholder images
+  const carouselItems = [
+    {
+      id: 1,
+      title: "One Piece",
+      description: "Follow Monkey D. Luffy and his swashbuckling crew in their search for the ultimate treasure, the One Piece, as they journey across a world of pirates, islands, and monsters on the Grand Line.",
+      imageUrl: "https://via.placeholder.com/1200x600/0066cc/ffffff?text=One+Piece",
+      rating: 9.7,
+      linkTo: "/watch/one-piece"
+    },
+    {
+      id: 2,
+      title: "Solo Leveling",
+      description: "In a world where hunters with special abilities battle dangerous monsters to protect humanity, Sung Jin-Woo is the weakest of all hunters—until a mysterious System grants him the power to level up.",
+      imageUrl: "https://images6.alphacoders.com/137/1372163.jpeg",
+      rating: 9.5,
+      linkTo: "/watch/solo-leveling"
+    },
+    {
+      id: 3,
+      title: "Attack on Titan",
+      description: "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, giant humanoid beings who devour humans seemingly without reason, Eren Yeager vows to reclaim the world.",
+      imageUrl: "https://wallpapercat.com/w/full/1/7/0/25940-3840x2160-desktop-4k-attack-on-titan-the-final-season-wallpaper-image.jpg",
+      rating: 9.4,
+      linkTo: "/watch/attack-on-titan"
+    },
+    {
+      id: 4,
+      title: "Demon Slayer",
+      description: "After his family was brutally murdered and his sister turned into a demon, Tanjiro Kamado embarks on a journey to become a demon slayer and find a cure for his sister.",
+      imageUrl: "https://wallpapers.com/images/featured/demon-slayer-4k-pictures-5v5lz47uso2tx2kr.jpg",
+      rating: 9.3,
+      linkTo: "/watch/demon-slayer"
+    }
+  ];
   return (
-    <HomeContainer>
-      {/* Hero Carousel */}
-      <Carousel items={carouselItems} autoRotate={true} interval={5000} />
-
-      {/* Category Filter */}
-      <Section>
-        <SectionTitle>
-          <FaFire /> Browse Categories
-        </SectionTitle>
-        <CategoryFilter>
-          <CategoryButton
-            active={activeCategory === "All"}
-            onClick={() => setActiveCategory("All")}
-          >
-            All
-          </CategoryButton>
-          {CategoriesData.map((category) => (
-            <CategoryButton
-              key={category._id}
-              active={activeCategory === category.title}
-              onClick={() => setActiveCategory(category.title)}
-            >
-              {category.title}
-            </CategoryButton>
-          ))}
-        </CategoryFilter>
-      </Section>
-
-      {/* Trending Anime */}
-      <Section>
-        <SectionHeader>
-          <SectionTitle>
-            <FaFire /> Trending Now
-          </SectionTitle>
-          <ViewAllLink href="/trending">
-            View All <FaChevronRight />
-          </ViewAllLink>
-        </SectionHeader>
-        <AnimeGrid>
-          {trendingAnime.map((anime) => (
-            <AnimeCard key={anime.name} anime={anime} showTrendingBadge />
-          ))}
-        </AnimeGrid>
-      </Section>
-
-      {/* Recently Added */}
-      <Section>
-        <SectionHeader>
-          <SectionTitle>
-            <FaClock /> Recently Added
-          </SectionTitle>
-          <ViewAllLink href="/recent">
-            View All <FaChevronRight />
-          </ViewAllLink>
-        </SectionHeader>
-        <AnimeGrid>
-          {recentAnime.map((anime) => (
-            <AnimeCard key={anime.name} anime={anime} showNewBadge />
-          ))}
-        </AnimeGrid>
-      </Section>
-
-      {/* Popular Categories */}
-      <Section>
-        <SectionTitle>
-          <FaStar /> Popular Categories
-        </SectionTitle>
-        <CategoryGrid>
-          {[
-            "Action",
-            "Adventure",
-            "Fantasy",
-            "Romance",
-            "Horror",
-            "Comedy",
-          ].map((cat) => (
-            <CategoryTile key={cat} onClick={() => setActiveCategory(cat)}>
-              <CategoryImage
-                src={AnimeData.find((a) => a.category === cat)?.image}
-              />
-              <CategoryOverlay>
-                <CategoryName>{cat}</CategoryName>
-              </CategoryOverlay>
-            </CategoryTile>
-          ))}
-        </CategoryGrid>
-      </Section>
-    </HomeContainer>
+    <div className="layout">
+      <Sidebar />
+      
+      <main className="main-content">
+        <section className="hero-section">
+          <Carousel items={carouselItems} />
+        </section>
+        
+        <section className="anime-section">
+          <AnimeList
+            title="Trending Now"
+            animes={[mockAnime, {...mockAnime, id: 2, title: "Demon Slayer"}, {...mockAnime, id: 3, title: "My Hero Academia"}, {...mockAnime, id: 4, title: "Jujutsu Kaisen"}]}
+          />
+        </section>
+        
+        <section className="anime-section">
+          <AnimeList
+            title="New Releases"
+            animes={[{...mockAnime, id: 5, title: "Chainsaw Man"}, {...mockAnime, id: 6, title: "Blue Lock"}, {...mockAnime, id: 7, title: "Spy x Family"}, {...mockAnime, id: 8, title: "Tokyo Revengers"}]}
+          />
+        </section>
+        
+        <section className="anime-section">
+          <AnimeList
+            title="Popular This Season"
+            animes={[{...mockAnime, id: 9, title: "Solo Leveling"}, {...mockAnime, id: 10, title: "Boruto"}, {...mockAnime, id: 11, title: "One Piece"}, {...mockAnime, id: 12, title: "Naruto"}]}
+          />
+        </section>
+        
+        <section className="anime-section">
+          <AnimeList
+            title="All Time Favorites"
+            animes={[{...mockAnime, id: 13, title: "Fullmetal Alchemist"}, {...mockAnime, id: 14, title: "Death Note"}, {...mockAnime, id: 15, title: "Hunter x Hunter"}, {...mockAnime, id: 16, title: "Steins;Gate"}]}
+          />
+        </section>
+      </main>
+    </div>
   );
-};
-
-// Styled Components
-const HomeContainer = styled.div`
-  padding-bottom: 3rem;
-  background: #0f0f12;
-  color: white;
-`;
-
-const Section = styled.section`
-  padding: 2rem 5%;
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-`;
-
-const SectionTitle = styled.h2`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  margin: 0;
-  position: relative;
-  padding-bottom: 0.5rem;
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 50px;
-    height: 3px;
-    background: #ff5722;
-  }
-`;
-
-const ViewAllLink = styled.a`
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: #aaa;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-
-  &:hover {
-    color: #ff5722;
-  }
-`;
-
-const CategoryFilter = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-bottom: 2rem;
-`;
-
-const CategoryButton = styled.button`
-  padding: 0.5rem 1.2rem;
-  border: none;
-  border-radius: 20px;
-  background: ${(props) =>
-    props.active ? "#FF5722" : "rgba(255, 255, 255, 0.1)"};
-  color: ${(props) => (props.active ? "white" : "#aaa")};
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.active ? "#FF5722" : "rgba(255, 255, 255, 0.2)"};
-  }
-`;
-
-const AnimeGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-  }
-`;
-
-const CategoryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-`;
-
-const CategoryTile = styled.div`
-  position: relative;
-  height: 150px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(255, 87, 34, 0.2);
-  }
-`;
-
-const CategoryImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const CategoryOverlay = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-`;
-
-const CategoryName = styled.h3`
-  margin: 0;
-  color: white;
-  font-size: 1.2rem;
-`;
+}
 
 export default HomePage;

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import image1a from "../assets/images/1a.jpeg"; // Import the image
+import image1a from "../assets/images/1a.jpeg";
+import { Link } from 'react-router-dom'; 
 
 const Carousel = ({ items }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [direction, setDirection] = useState("next");
 
-  // Ensure items exist before rendering
+  // Ensure items exist before proceeding
   if (!items || items.length === 0) {
     return <FallbackMessage>No items available</FallbackMessage>;
   }
@@ -46,27 +47,31 @@ const Carousel = ({ items }) => {
     setCurrentIndex(index);
   };
 
+  const currentItem = enhancedItems[currentIndex];
+
   return (
     <CarouselContainer
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <SlideContainer
-        bgImage={enhancedItems[currentIndex]?.imageUrl}
+        bgImage={currentItem.imageUrl}
         direction={direction}
       >
         <SlideContent>
           <AnimeTitleWrapper>
-            <AnimeTitle>{enhancedItems[currentIndex]?.title}</AnimeTitle>
+            <AnimeTitle>{currentItem.title}</AnimeTitle>
           </AnimeTitleWrapper>
           <AnimeDescriptionWrapper>
             <AnimeDescription>
-              {enhancedItems[currentIndex]?.description?.substring(0, 150)}...
+              {currentItem.description?.substring(0, 150)}...
             </AnimeDescription>
           </AnimeDescriptionWrapper>
-          <ButtonWrapper>
-            <WatchNowButton>WATCH NOW</WatchNowButton>
-          </ButtonWrapper>
+          <Link to={currentItem.linkTo || `/watch/${currentItem.id}`}>
+            <ButtonWrapper>
+              <WatchNowButton>WATCH NOW</WatchNowButton>
+            </ButtonWrapper>
+          </Link>
         </SlideContent>
       </SlideContainer>
 
@@ -93,6 +98,7 @@ const Carousel = ({ items }) => {
   );
 };
 
+// Rest of your styled components remain unchanged
 // Enhanced Styled Components
 const fadeInFromLeft = keyframes`
   from {
