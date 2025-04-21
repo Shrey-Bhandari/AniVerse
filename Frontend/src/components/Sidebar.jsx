@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -17,6 +17,8 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+    // Toggle class on parent element to adjust main content
+    document.querySelector('.layout')?.classList.toggle('sidebar-expanded');
   };
 
   const navItems = [
@@ -66,8 +68,8 @@ const Sidebar = () => {
 const SidebarContainer = styled.div`
   position: fixed;
   left: 0;
-  top: 0;
-  height: 100vh;
+  top: 60px; /* Start below navbar */
+  height: calc(100vh - 60px); /* Take full remaining height */
   width: ${({ $collapsed, $hovered }) =>
     $collapsed ? ($hovered ? "200px" : "60px") : "200px"};
   background-color: #1a1a1a;
