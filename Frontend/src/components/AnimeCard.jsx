@@ -1,31 +1,63 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { FaPlay, FaPlus, FaStar } from "react-icons/fa";
-import backgroundImage from "../assets/images/1.jpg"; // Import the background image
+// Import all images from assets folder
+import image1 from "../assets/images/1.jpg";
+import image1a from "../assets/images/1a.jpeg";
+import image2 from "../assets/images/2.webp";
+import image3 from "../assets/images/3.webp";
+import image4 from "../assets/images/4.jpeg";
+import image5 from "../assets/images/5.jpg";
+
+// Create a mapping of images to use for different animes
+const animeImages = {
+  "Attack on Titan": image1,
+  "Death Note": image2,
+  "One Piece": image3,
+  "Steins;Gate": image4, 
+  "Fullmetal Alchemist": image5,
+  "Tokyo Ghoul": image1a,
+  "Demon Slayer": image2,
+  "My Hero Academia": image3,
+  "Jujutsu Kaisen": image4,
+  "Chainsaw Man": image5,
+  "Blue Lock": image1,
+  "Spy x Family": image2,
+  "Tokyo Revengers": image3,
+  "Solo Leveling": image4,
+  "Boruto": image5,
+  "Naruto": image1a,
+  "Hunter x Hunter": image3,
+  // Default image for any other anime not in this list
+  "default": image1
+};
 
 const AnimeCard = ({ anime, onCardClick }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Get the anime name - use title if name is not available
+  const animeName = anime.name || anime.title || "Unknown Anime";
+
   // Map your AnimeData structure to match the expected props
   const mappedAnime = {
-    title: anime.name,
-    imageUrl: anime.image,
-    rating: anime.rate,
-    type: anime.category,
-    episodes: Math.floor(Math.random() * 12) + 1, // Example: Random episode count
-    year: anime.year,
-    isNew: parseInt(anime.year) >= 2020, // Mark as "NEW" if year >= 2020
+    title: animeName,
+    imageUrl: animeImages[animeName] || animeImages.default, // Use the correct image based on anime name
+    rating: anime.rate || anime.rating || 0,
+    type: anime.category || anime.type || "Unknown",
+    episodes: anime.episodes || Math.floor(Math.random() * 12) + 1, // Example: Random episode count
+    year: anime.year || "2023",
+    isNew: parseInt(anime.year || "2023") >= 2020, // Mark as "NEW" if year >= 2020
   };
 
   return (
     <CardContainer
-      onClick={() => onCardClick(anime)}
+      onClick={() => onCardClick && onCardClick(anime)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      backgroundImage={mappedAnime.imageUrl} // Pass the image as a prop
     >
       <ImageContainer>
-        <AnimeImage src={mappedAnime.imageUrl} alt={mappedAnime.title} />
-
+        {/* No need for separate AnimeImage component since we're using background image */}
         {isHovered && (
           <HoverOverlay>
             <TopBadges>
@@ -95,7 +127,7 @@ const CardContainer = styled.div`
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-  background-image: url(${backgroundImage});
+  background-image: url(${props => props.backgroundImage});
   background-size: cover;
   background-position: center;
   margin: 10px;
@@ -122,6 +154,7 @@ const CardContainer = styled.div`
   }
 `;
 
+// Rest of the styled components remain the same
 const ImageContainer = styled.div`
   position: relative;
   width: 100%;
@@ -130,18 +163,8 @@ const ImageContainer = styled.div`
   z-index: 1;
 `;
 
-const AnimeImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-  filter: brightness(0.95);
-
-  ${CardContainer}:hover & {
-    transform: scale(1.1);
-    filter: brightness(1.05);
-  }
-`;
+// The AnimeImage component is no longer needed since we're using background image
+// keeping the rest of the styled components unchanged
 
 const HoverOverlay = styled.div`
   position: absolute;
@@ -164,6 +187,7 @@ const HoverOverlay = styled.div`
   z-index: 2;
 `;
 
+// ... rest of styled components remain unchanged
 const TopBadges = styled.div`
   position: absolute;
   top: 8px;
