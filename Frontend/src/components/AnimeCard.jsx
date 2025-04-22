@@ -1,12 +1,49 @@
+<<<<<<< HEAD
 import React, { useState, useContext } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { FaPlay, FaPlus, FaStar, FaCheck, FaEllipsisH } from "react-icons/fa";
 import backgroundImage from "../assets/images/1.jpg"; 
 import { useNavigate } from "react-router-dom";
 import { AnimeContext } from "../Context/AnimeContext";
+=======
+import React, { useState } from "react";
+import styled, { keyframes } from "styled-components";
+import { FaPlay, FaPlus, FaStar } from "react-icons/fa";
+// Import all images from assets folder
+import image1 from "../assets/images/1.jpg";
+import image1a from "../assets/images/1a.jpeg";
+import image2 from "../assets/images/2.webp";
+import image3 from "../assets/images/3.webp";
+import image4 from "../assets/images/4.jpeg";
+import image5 from "../assets/images/5.jpg";
+
+// Create a mapping of images to use for different animes
+const animeImages = {
+  "Attack on Titan": image1,
+  "Death Note": image2,
+  "One Piece": image3,
+  "Steins;Gate": image4, 
+  "Fullmetal Alchemist": image5,
+  "Tokyo Ghoul": image1a,
+  "Demon Slayer": image2,
+  "My Hero Academia": image3,
+  "Jujutsu Kaisen": image4,
+  "Chainsaw Man": image5,
+  "Blue Lock": image1,
+  "Spy x Family": image2,
+  "Tokyo Revengers": image3,
+  "Solo Leveling": image4,
+  "Boruto": image5,
+  "Naruto": image1a,
+  "Hunter x Hunter": image3,
+  // Default image for any other anime not in this list
+  "default": image1
+};
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
 
 const AnimeCard = ({ anime, showProgress, showCheckmark, showAddButton }) => {
   const [isHovered, setIsHovered] = useState(false);
+<<<<<<< HEAD
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { selectAnime } = useContext(AnimeContext);
@@ -34,10 +71,26 @@ const AnimeCard = ({ anime, showProgress, showCheckmark, showAddButton }) => {
   const toggleMenu = (e) => {
     e.stopPropagation();
     setIsMenuOpen(!isMenuOpen);
+=======
+
+  // Get the anime name - use title if name is not available
+  const animeName = anime.name || anime.title || "Unknown Anime";
+
+  // Map your AnimeData structure to match the expected props
+  const mappedAnime = {
+    title: animeName,
+    imageUrl: animeImages[animeName] || animeImages.default, // Use the correct image based on anime name
+    rating: anime.rate || anime.rating || 0,
+    type: anime.category || anime.type || "Unknown",
+    episodes: anime.episodes || Math.floor(Math.random() * 12) + 1, // Example: Random episode count
+    year: anime.year || "2023",
+    isNew: parseInt(anime.year || "2023") >= 2020, // Mark as "NEW" if year >= 2020
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
   };
 
   return (
     <CardContainer
+<<<<<<< HEAD
       onClick={handleCardClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
@@ -51,6 +104,52 @@ const AnimeCard = ({ anime, showProgress, showCheckmark, showAddButton }) => {
           <ProgressBar width={66} />
           <ProgressText>EP 8/12</ProgressText>
         </Progress>
+=======
+      onClick={() => onCardClick && onCardClick(anime)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      backgroundImage={mappedAnime.imageUrl} // Pass the image as a prop
+    >
+      <ImageContainer>
+        {/* No need for separate AnimeImage component since we're using background image */}
+        {isHovered && (
+          <HoverOverlay>
+            <TopBadges>
+              {mappedAnime.isNew && <NewBadge>NEW</NewBadge>}
+              <RatingBadge>
+                <FaStar /> {mappedAnime.rating}
+              </RatingBadge>
+            </TopBadges>
+
+            <HoverContent>
+              <ActionButtons>
+                <PlayButton>
+                  <FaPlay />
+                </PlayButton>
+                <AddButton>
+                  <FaPlus />
+                </AddButton>
+              </ActionButtons>
+
+              <AnimeTitle>{mappedAnime.title}</AnimeTitle>
+              <AnimeDetails>
+                <DetailItem>{mappedAnime.type}</DetailItem>
+                <DetailItem>{mappedAnime.episodes} eps</DetailItem>
+                <DetailItem>{mappedAnime.year}</DetailItem>
+              </AnimeDetails>
+            </HoverContent>
+          </HoverOverlay>
+        )}
+      </ImageContainer>
+
+      {!isHovered && (
+        <CardFooter>
+          <FooterTitle>{mappedAnime.title}</FooterTitle>
+          <FooterRating>
+            <FaStar color="#FFD700" /> {mappedAnime.rating}
+          </FooterRating>
+        </CardFooter>
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
       )}
       
       {/* Completion Mark */}
@@ -147,6 +246,46 @@ const glowingEffect = keyframes`
 // Styled Components
 const CardContainer = styled.div`
   position: relative;
+<<<<<<< HEAD
+=======
+  width: 180px; /* Fixed width instead of 100% */
+  height: 260px; /* Fixed height with 2:3 aspect ratio */
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  background-image: url(${props => props.backgroundImage});
+  background-size: cover;
+  background-position: center;
+  margin: 10px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    // background: linear-gradient(
+    //   135deg,
+    //   rgba(20, 30, 48, 0.6),
+    //   rgba(36, 59, 85, 0.6)
+    // );
+    z-index: 0;
+  }
+
+  &:hover {
+    transform: scale(1.03) translateY(-5px);
+    z-index: 10;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+// Rest of the styled components remain the same
+const ImageContainer = styled.div`
+  position: relative;
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
   width: 100%;
   min-width: 160px;
   max-width: 240px;
@@ -165,6 +304,7 @@ const CardContainer = styled.div`
   }
 `;
 
+<<<<<<< HEAD
 const CardPoster = styled.img`
   width: 100%;
   height: 100%;
@@ -175,6 +315,10 @@ const CardPoster = styled.img`
     transform: scale(1.1);
   }
 `;
+=======
+// The AnimeImage component is no longer needed since we're using background image
+// keeping the rest of the styled components unchanged
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
 
 const CardGradient = styled.div`
   position: absolute;
@@ -201,7 +345,16 @@ const CardOverlay = styled.div`
   transition: all 0.3s ease;
 `;
 
+<<<<<<< HEAD
 const OverlayTop = styled.div`
+=======
+// ... rest of styled components remain unchanged
+const TopBadges = styled.div`
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
   display: flex;
   justify-content: space-between;
   align-items: flex-start;

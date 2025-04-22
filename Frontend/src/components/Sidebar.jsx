@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { NavLink, useLocation } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
+=======
+import { NavLink } from "react-router-dom";
+import styled from "styled-components";
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
 import {
   FaHome,
   FaFire,
@@ -27,12 +32,17 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+<<<<<<< HEAD
     // Add/remove class from body for main content adjustment
     if (isCollapsed) {
       document.body.classList.add('sidebar-expanded');
     } else {
       document.body.classList.remove('sidebar-expanded');
     }
+=======
+    // Toggle class on parent element to adjust main content
+    document.querySelector('.layout')?.classList.toggle('sidebar-expanded');
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
   };
 
   const navItems = [
@@ -114,8 +124,8 @@ const slideIn = keyframes`
 const SidebarContainer = styled.div`
   position: fixed;
   left: 0;
-  top: 0;
-  height: 100vh;
+  top: 60px; /* Start below navbar */
+  height: calc(100vh - 60px); /* Take full remaining height */
   width: ${({ $collapsed, $hovered }) =>
     $collapsed ? ($hovered ? "200px" : "60px") : "200px"};
   background-color: #0f0f0f;

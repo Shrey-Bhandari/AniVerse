@@ -37,13 +37,37 @@ const AppContent = () => {
   );
 };
 
+// Wrapper component to conditionally render Navbar
+const AppContent = () => {
+  const location = useLocation();
+  const isWatchPage = location.pathname.includes('/watch');
+  
+  return (
+    <div className="app">
+      {!isWatchPage && <Navbar />}
+      
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/watch/:id" element={<WatchPage />} />
+        {/* Add more routes as needed */}
+      </Routes>
+    </div>
+  );
+};
+
 function App() {
   return (
+<<<<<<< HEAD
     <AnimeProvider>
       <Router>
         <AppContent />
       </Router>
     </AnimeProvider>
+=======
+    <Router>
+      <AppContent />
+    </Router>
+>>>>>>> e4fd799667452bdb6e5647939e4b119d8350288d
   );
 }
 
